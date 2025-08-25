@@ -43,7 +43,7 @@ export const process = (component, paymentArea, itemId, description) => {
     return Repository.getConfigForJs(component, paymentArea, itemId)
     .then(async config => {
 
-        const body = await Templates.render('paygw_authorizedotnet/authorizedotnet_form', {
+        const body = await Templates.render('paygw_authorizedotnet/authorizedotnet_button', {
             apiloginid: config.apiloginid,
             clientkey: config.publicclientkey,
         });
