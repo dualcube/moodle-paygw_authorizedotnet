@@ -12,7 +12,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="paymentid_uk" TYPE="unique" FIELDS="paymentid"/>
+        <KEY NAME="paymentid" TYPE="unique" FIELDS="paymentid"/>
       </KEYS>
     </TABLE>
   </TABLES>
