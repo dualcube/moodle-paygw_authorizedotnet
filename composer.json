@@ -1,7 +1,7 @@
 {
-    "name": "moodle/enrol_authorizedotnet",
-    "description": "Stripe Payment enrolment plugin for Moodle",
-    "type": "moodle-enrol",
+    "name": "moodle/paygw_authorizedotnet",
+    "description": "Authorizedotnet Payment paygw plugin for Moodle",
+    "type": "moodle-paygw",
     "license": "GPL-3.0-or-later",
     "homepage": "https://dualcube.com",
     "authors": [
@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "enrol_authorizedotnet\\": "classes/"
+            "paygw_authorizedotnet\\": "classes/"
         }
     },
     "minimum-stability": "stable",
