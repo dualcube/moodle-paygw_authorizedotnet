@@ -86,7 +86,7 @@ jobs:
       - name: PHP Mess Detector
         if: ${{ !cancelled() }}
         continue-on-error: true
-        run: moodle-plugin-ci phpmd authorizedotnet --exclude authorizedotnet/vendor,authorizedotnet/node_modules
+        run: moodle-plugin-ci phpmd authorizedotnet
 
       - name: PHP Code Beautifier and Fixer
         if: ${{ !cancelled() }}
