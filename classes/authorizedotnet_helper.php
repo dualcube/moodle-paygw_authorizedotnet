@@ -18,8 +18,8 @@
  * authorize.net payment gateway plugin.
  *
  * @package    paygw_authorizedotnet
- * @author     DualCube <admin@dualcube.com>
- * @copyright  2015 DualCube Team(https://dualcube.com)
+ * @author     DualCube
+ * @copyright  2015 DualCube
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -37,34 +37,10 @@ use net\authorize\api\controller as AnetController;
  */
 class authorizedotnet_helper {
 
-    /**
-     * The API Login ID for authentication.
-     *
-     * @var string
-     */
-    private $apiloginid;
+    private string $apiloginid;
+    private string $transactionkey;
+    private bool $sandbox;
 
-    /**
-     * The Transaction Key for authentication.
-     *
-     * @var string
-     */
-    private $transactionkey;
-
-    /**
-     * Whether the class is in sandbox mode or production.
-     *
-     * @var bool
-     */
-    private $sandbox;
-
-    /**
-     * Constructor for the Authorize.net helper.
-     *
-     * @param string $apiloginid The API Login ID.
-     * @param string $transactionkey The Transaction Key.
-     * @param bool $sandbox Whether to use sandbox mode.
-     */
     public function __construct(string $apiloginid, string $transactionkey, bool $sandbox) {
         $this->apiloginid = $apiloginid;
         $this->transactionkey = $transactionkey;
@@ -74,98 +50,69 @@ class authorizedotnet_helper {
     /**
      * Creates a transaction using the Authorize.net API.
      *
-     * @param float $amount The transaction amount.
-     * @param string $currency The transaction currency.
-     * @param object $opaquedata The opaque data object.
-     * @return array An array containing the transaction result.
+     * @param float $amount Transaction amount.
+     * @param string $currency Currency (not used by API, but kept for consistency).
+     * @param object $opaquedata Opaque data object.
+     * @return array Transaction result.
      */
     public function create_transaction(float $amount, string $currency, object $opaquedata): array {
-        // Create a merchantAuthenticationType object with authentication details.
+        // Authentication.
         $merchantauthentication = new AnetAPI\MerchantAuthenticationType();
         $merchantauthentication->setName($this->apiloginid);
         $merchantauthentication->setTransactionKey($this->transactionkey);
 
-        // Set the transaction's refId.
-        $refid = 'ref' . time();
-
-        // Create the payment data for a credit card.
+        // Payment details.
         $opaquedatatype = new AnetAPI\OpaqueDataType();
         $opaquedatatype->setDataDescriptor($opaquedata->dataDescriptor);
         $opaquedatatype->setDataValue($opaquedata->dataValue);
 
-        // Add the payment data to a paymentType object.
-        $paymentone = new AnetAPI\PaymentType();
-        $paymentone->setOpaqueData($opaquedatatype);
+        $payment = new AnetAPI\PaymentType();
+        $payment->setOpaqueData($opaquedatatype);
 
-        // Create a TransactionRequestType object and add the previous objects to it.
-        $transactionrequesttype = new AnetAPI\TransactionRequestType();
-        $transactionrequesttype->setTransactionType("authCaptureTransaction");
-        $transactionrequesttype->setAmount($amount);
-        $transactionrequesttype->setPayment($paymentone);
+        // Transaction request.
+        $transactionrequest = new AnetAPI\TransactionRequestType();
+        $transactionrequest->setTransactionType("authCaptureTransaction");
+        $transactionrequest->setAmount($amount);
+        $transactionrequest->setPayment($payment);
 
-        // Assemble the complete transaction request.
         $request = new AnetAPI\CreateTransactionRequest();
         $request->setMerchantAuthentication($merchantauthentication);
-        $request->setRefId($refid);
-        $request->setTransactionRequest($transactionrequesttype);
+        $request->setRefId('ref' . time());
+        $request->setTransactionRequest($transactionrequest);
 
-        // Create the controller and get the response.
+        // Execute.
         $controller = new AnetController\CreateTransactionController($request);
-
         $environment = $this->sandbox
             ? \net\authorize\api\constants\ANetEnvironment::SANDBOX
             : \net\authorize\api\constants\ANetEnvironment::PRODUCTION;
 
         $response = $controller->executeWithApiResponse($environment);
-        if ($response != null) {
-            if ($response->getMessages()->getResultCode() == "Ok") {
-                $tresponse = $response->getTransactionResponse();
-                if ($tresponse != null) {
-                    if ($tresponse->getResponseCode() == "1") {
-                        return [
-                            'success'       => true,
-                            'transactionid' => $tresponse->getTransId(),
-                            'status'        => $tresponse->getMessages()[0]->getDescription(),
-                        ];
-                    } else {
-                        // Not approved, capture error details.
-                        $message = 'Transaction Failed';
-                        if ($tresponse->getErrors() != null) {
-                            $message = $tresponse->getErrors()[0]->getErrorText();
-                        }
-                        return [
-                            'success' => false,
-                            'message' => $message,
-                        ];
-                    }
-                } else {
-                    $message = 'Transaction Failed';
-                    if ($tresponse->getErrors() != null) {
-                        $message = $tresponse->getErrors()[0]->getErrorText();
-                    }
-                    return [
-                        'success' => false,
-                        'message' => $message,
-                    ];
-                }
-            } else {
-                $tresponse = $response->getTransactionResponse();
-                $message = 'Transaction Failed';
-                if ($tresponse != null && $tresponse->getErrors() != null) {
-                    $message = $tresponse->getErrors()[0]->getErrorText();
-                } else {
-                    $message = $response->getMessages()->getMessage()[0]->getText();
-                }
-                return [
-                    'success' => false,
-                    'message' => $message,
-                ];
-            }
-        } else {
+
+        if ($response === null) {
+            return ['success' => false, 'message' => 'No response from Authorize.net'];
+        }
+
+        if ($response->getMessages()->getResultCode() !== "Ok") {
+            $tresponse = $response->getTransactionResponse();
+            $message = $tresponse && $tresponse->getErrors()
+                ? $tresponse->getErrors()[0]->getErrorText()
+                : $response->getMessages()->getMessage()[0]->getText();
+            return ['success' => false, 'message' => $message];
+        }
+
+        $tresponse = $response->getTransactionResponse();
+        if ($tresponse && $tresponse->getResponseCode() === "1") {
             return [
-                'success' => false,
-                'message' => 'No response from Authorize.net',
+                'success'       => true,
+                'transactionid' => $tresponse->getTransId(),
+                'status'        => $tresponse->getMessages()[0]->getDescription(),
             ];
         }
+
+        $message = $tresponse && $tresponse->getErrors()
+            ? $tresponse->getErrors()[0]->getErrorText()
+            : 'Transaction Failed';
+
+        return ['success' => false, 'message' => $message];
     }
 }
