@@ -13,6 +13,7 @@ authorizedotnet/vendor/phpcompatibility/*
 authorizedotnet/vendor/dealerdirect/*
 authorizedotnet/vendor/moodlehq/*
 authorizedotnet/vendor/composer/*
+authorizedotnet/vendor/autoload.php
 authorizedotnet/node_modules/*
 authorizedotnet/phpunit.xml
 authorizedotnet/tests/*
