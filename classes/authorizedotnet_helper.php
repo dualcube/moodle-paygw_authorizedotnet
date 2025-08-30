@@ -19,7 +19,7 @@
  *
  * @package    paygw_authorizedotnet
  * @author     DualCube
- * @copyright  2015 DualCube
+ * @copyright  2025 DualCube
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
