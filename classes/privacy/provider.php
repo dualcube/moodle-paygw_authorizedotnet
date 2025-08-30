@@ -15,10 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy provider for the Authorize.net payment gateway.
+ * authorize.net payment gateway plugin.
  *
  * @package    paygw_authorizedotnet
- * @copyright  2025 Me
+ * @author     DualCube <admin@dualcube.com>
+ * @copyright  2025 DualCube Team(https://dualcube.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

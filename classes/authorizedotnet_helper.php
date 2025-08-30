@@ -18,8 +18,8 @@
  * authorize.net payment gateway plugin.
  *
  * @package    paygw_authorizedotnet
- * @author     DualCube
- * @copyright  2025 DualCube
+ * @author     DualCube <admin@dualcube.com>
+ * @copyright  2025 DualCube Team(https://dualcube.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
