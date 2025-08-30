@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="payment/gateway/authorizedotnet/db" VERSION="20201216" COMMENT="XMLDB file for authorizedotnet payment gateway plugin"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="paygw_authorizedotnet" COMMENT="Stores Authorize.Net transaction details">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="paymentid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID from the core payment table."/>
+        <FIELD NAME="transactionid" TYPE="char" LENGTH="50" NOTNULL="true" COMMENT="The transaction ID from Authorize.Net."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="paymentid" TYPE="unique" FIELDS="paymentid"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
