@@ -38,3 +38,4 @@ $string['publicclientkey_help'] = 'Enter the public client key.';
 $string['sandbox'] = 'Sandbox';
 $string['transactionkey'] = 'Transaction Key';
 $string['transactionkey_help'] = 'Enter the transaction key.';
+$string['pay'] = 'Pay';
