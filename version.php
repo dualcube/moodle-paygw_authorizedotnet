@@ -25,6 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025082110;
+$plugin->version   = 2025083000;
 $plugin->requires  = 2024100700;
 $plugin->component = 'paygw_authorizedotnet';
