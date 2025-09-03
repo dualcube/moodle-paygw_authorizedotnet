@@ -59,7 +59,7 @@ jobs:
       - name: Clean Extra Files from Plugin
         run: |
           rm -rf authorizedotnet/.git authorizedotnet/.github authorizedotnet/node_modules authorizedotnet/tests authorizedotnet/phpunit.xml
-          rm -f authorizedotnet/composer.* authorizedotnet/package*.json authorizedotnet/webpack.config.js authorizedotnet/.zipignore authorizedotnet/vendor
+          rm -f authorizedotnet/composer.* authorizedotnet/package*.json authorizedotnet/webpack.config.js authorizedotnet/.zipignore
 
       - name: Install moodle-plugin-ci tooling
         run: |
