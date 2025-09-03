@@ -32,25 +32,25 @@ require_once($CFG->libdir . '/filelib.php');
     /**
      * Helper class for interacting with the Authorize.Net API (REST).
      */
-    class authorizedotnet_helper {
+class authorizedotnet_helper {
 
     /**
      * API login ID for Authorize.Net.
-     * 
+     *
      * @var string
      */
     private string $apiloginid;
 
     /**
      * Transaction key for Authorize.Net.
-     * 
+     *
      * @var string
      */
     private string $transactionkey;
 
     /**
      * Whether to use sandbox mode.
-     * 
+     *
      * @var bool
      */
     private bool $sandbox;

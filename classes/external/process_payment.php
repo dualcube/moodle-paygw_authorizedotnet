@@ -68,10 +68,7 @@ class process_payment extends external_api {
      * @param string $paymentarea Payment area within the component.
      * @param int $itemid Internal identifier used by the component.
      * @param string $opaquedata JSON string of opaque data from Authorize.Net (Accept.js).
-     * @return array {
-     *     @type bool   $success Whether the transaction was successful.
-     *     @type string $message Response or error message.
-     * }
+     * @return array
      */
     public static function execute(string $component, string $paymentarea, int $itemid, string $opaquedata): array {
         global $USER, $DB;
