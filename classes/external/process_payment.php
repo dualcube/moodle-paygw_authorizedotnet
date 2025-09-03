@@ -94,7 +94,22 @@ class process_payment extends external_api {
 
         $helper = new authorizedotnet_helper($config->apiloginid, $config->transactionkey, $config->environment == 'sandbox');
 
-        $response = $helper->create_transaction($amount,  $opaquedataobject);
+        $merchantcurrency = $helper->get_merchant_currency();
+        if (!$merchantcurrency['success']) {
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch merchant currency: ' . $merchantcurrency['message'],
+            ];
+        }
+
+        if ($currency !== $merchantcurrency['currency']) {
+            return [
+                'success' => false,
+                'message' => 'Currency mismatch. Merchant supports ' . $merchantcurrency['currency'] . ' but got ' . $currency,
+            ];
+        }
+
+        $response = $helper->create_transaction($amount, $currency, $opaquedataobject);
 
         $success = false;
         $message = '';
