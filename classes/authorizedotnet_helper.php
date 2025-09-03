@@ -29,26 +29,29 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/filelib.php');
 
-    /**
-     * Helper class for interacting with the Authorize.Net API (REST).
-     */
+/**
+ * Helper class for interacting with the Authorize.Net API (REST).
+ */
 class authorizedotnet_helper {
 
     /**
      * API login ID for Authorize.Net.
-     * * @var string
+     *
+     * @var string
      */
     private string $apiloginid;
 
     /**
      * Transaction key for Authorize.Net.
-     * * @var string
+     *
+     * @var string
      */
     private string $transactionkey;
 
     /**
      * Whether to use sandbox mode.
-     * * @var bool
+     *
+     * @var bool
      */
     private bool $sandbox;
 
@@ -69,9 +72,9 @@ class authorizedotnet_helper {
      * Get merchant details (including currency) from Authorize.Net.
      *
      * @return array {
-     * @type bool $success Whether request was successful.
-     * @type string $currency Merchant's currency code.
-     * @type string $message Error or success message.
+     *   success  bool   Whether request was successful.
+     *   currency string Merchant's currency code.
+     *   message  string Error or success message.
      * }
      */
     public function get_merchant_currency(): array {
