@@ -10,9 +10,6 @@
             "homepage": "https://dualcube.com"
         }
     ],
-    "require": {
-        "php": ">=5.6"
-    },
     "autoload": {
         "psr-4": {
             "paygw_authorizedotnet\\": "classes/"
@@ -27,6 +24,7 @@
         }
     },
     "require-dev": {
+        "php": ">=5.6",
         "moodlehq/moodle-cs": "^3.2",
         "phpcompatibility/php-compatibility": "^9.3",
         "squizlabs/php_codesniffer": "^3.13"
