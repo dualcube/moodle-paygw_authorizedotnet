@@ -29,15 +29,39 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/filelib.php');
 
-/**
- * Helper class for interacting with the Authorize.Net API (REST).
- */
-class authorizedotnet_helper {
+    /**
+     * Helper class for interacting with the Authorize.Net API (REST).
+     */
+    class authorizedotnet_helper {
 
+    /**
+     * API login ID for Authorize.Net.
+     * 
+     * @var string
+     */
     private string $apiloginid;
+
+    /**
+     * Transaction key for Authorize.Net.
+     * 
+     * @var string
+     */
     private string $transactionkey;
+
+    /**
+     * Whether to use sandbox mode.
+     * 
+     * @var bool
+     */
     private bool $sandbox;
 
+    /**
+     * Constructor for Authorize.Net helper.
+     *
+     * @param string $apiloginid API login ID.
+     * @param string $transactionkey Transaction key.
+     * @param bool $sandbox Use sandbox environment if true.
+     */
     public function __construct(string $apiloginid, string $transactionkey, bool $sandbox) {
         $this->apiloginid = $apiloginid;
         $this->transactionkey = $transactionkey;
@@ -48,11 +72,10 @@ class authorizedotnet_helper {
      * Creates a transaction using the Authorize.Net REST API.
      *
      * @param float $amount Transaction amount.
-     * @param string $currency Currency code (e.g., USD).
      * @param object $opaquedata Opaque data object from Accept.js (descriptor + value).
      * @return array Transaction result.
      */
-    public function create_transaction(float $amount, string $currency, object $opaquedata): array {
+    public function create_transaction(float $amount, object $opaquedata): array {
         $url = $this->sandbox
             ? 'https://apitest.authorize.net/xml/v1/request.api'
             : 'https://api.authorize.net/xml/v1/request.api';
@@ -72,10 +95,10 @@ class authorizedotnet_helper {
                         'opaqueData' => [
                             'dataDescriptor' => $opaquedata->dataDescriptor,
                             'dataValue'      => $opaquedata->dataValue,
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         // Moodle curl wrapper.

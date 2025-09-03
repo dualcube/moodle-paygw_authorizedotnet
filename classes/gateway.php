@@ -28,7 +28,9 @@ namespace paygw_authorizedotnet;
 /**
  * The gateway class for Authorize.net payment gateway.
  *
- * @copyright  2023 Me <me@example.com>
+ * @package    paygw_authorizedotnet
+ * @author     DualCube <admin@dualcube.com>
+ * @copyright  2025 DualCube Team(https://dualcube.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class gateway extends \core_payment\gateway {

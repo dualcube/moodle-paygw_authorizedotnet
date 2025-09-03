@@ -64,11 +64,14 @@ class process_payment extends external_api {
     /**
      * Perform what needs to be done when a transaction is reported to be complete.
      *
-     * @param string $component Name of the component that the itemid belongs to
-     * @param string $paymentarea
-     * @param int $itemid An internal identifier that is used by the component
-     * @param object $opaquedata The opaque data from Authorize.net
-     * @return array
+     * @param string $component Name of the component that the itemid belongs to.
+     * @param string $paymentarea Payment area within the component.
+     * @param int $itemid Internal identifier used by the component.
+     * @param string $opaquedata JSON string of opaque data from Authorize.Net (Accept.js).
+     * @return array {
+     *     @type bool   $success Whether the transaction was successful.
+     *     @type string $message Response or error message.
+     * }
      */
     public static function execute(string $component, string $paymentarea, int $itemid, string $opaquedata): array {
         global $USER, $DB;
@@ -94,7 +97,7 @@ class process_payment extends external_api {
 
         $helper = new authorizedotnet_helper($config->apiloginid, $config->transactionkey, $config->environment == 'sandbox');
 
-        $response = $helper->create_transaction($amount, $currency, $opaquedataobject);
+        $response = $helper->create_transaction($amount,  $opaquedataobject);
 
         $success = false;
         $message = '';
