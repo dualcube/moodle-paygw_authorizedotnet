@@ -88,17 +88,14 @@ class authorizedotnet_helper {
             'CURLOPT_SSL_VERIFYHOST' => 2,
         ];
 
-        
         $response = $curl->post($url, json_encode($payload), $options);
-        
+
         if ($response === false) {
             return ['success' => false, 'message' => 'No response from Authorize.Net'];
         }
-        
-        // Strip BOM if present
+
         $response = preg_replace('/^\xEF\xBB\xBF/', '', $response);
 
-        // Decode JSON
         $result = json_decode(trim($response), true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             return ['success' => false, 'message' => 'Invalid JSON response from Authorize.Net'];
