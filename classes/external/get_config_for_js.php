@@ -74,6 +74,9 @@ class get_config_for_js extends external_api {
             'itemid' => $itemid,
         ]);
 
+        $context = \context_system::instance();
+        self::validate_context($context);
+
         $config = helper::get_gateway_configuration($component, $paymentarea, $itemid, 'authorizedotnet');
 
         return [

@@ -42,25 +42,26 @@ export const process = (component, paymentArea, itemId, description) => {
     let modal;
     return Repository.getConfigForJs(component, paymentArea, itemId)
     .then(async config => {
-
+        // First render the payment button template
         const body = await Templates.render('paygw_authorizedotnet/authorizedotnet_button', {
             apiloginid: config.apiloginid,
             clientkey: config.publicclientkey,
         });
 
-        return Promise.all([
-            Modal.create({
-                title: getString('pluginname', 'paygw_authorizedotnet'),
-                body: body,
-                show: true,
-                removeOnClose: true,
-            }),
-            switchSdk(config.environment),
-        ]);
+        // Create modal with button already in DOM
+        return Modal.create({
+            title: getString('pluginname', 'paygw_authorizedotnet'),
+            body: body,
+            show: true,
+            removeOnClose: true,
+        }).then(modalInstance => {
+            modal = modalInstance;
+            // Now load the SDK (button exists already)
+            return switchSdk(config.environment);
+        });
     })
-    .then(([modalInstance]) => {
-        modal = modalInstance;
-
+    .then(() => {
+        // Set up the response handler after SDK is loaded
         return new Promise(resolve => {
             window.responseHandler = function(response) {
                 modal.getRoot().on(ModalEvents.outsideClick, (e) => {

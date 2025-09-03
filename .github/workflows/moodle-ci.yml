@@ -80,6 +80,14 @@ jobs:
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci phplint authorizedotnet
 
+      - name: Moodle Code Checker
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpcs --max-warnings 0
+
+      - name: Moodle PHPDoc Checker
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpdoc --max-warnings 0
+
       - name: PHP Mess Detector
         if: ${{ !cancelled() }}
         continue-on-error: true

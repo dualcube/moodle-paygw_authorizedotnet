@@ -27,13 +27,10 @@ namespace paygw_authorizedotnet;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once __DIR__ . '/../vendor/authorizenet/authorizenet/autoload.php';
-
-use net\authorize\api\contract\v1 as AnetAPI;
-use net\authorize\api\controller as AnetController;
+require_once($CFG->libdir . '/filelib.php');
 
 /**
- * Helper class for interacting with the Authorize.net API.
+ * Helper class for interacting with the Authorize.Net API (REST).
  */
 class authorizedotnet_helper {
 
@@ -48,71 +45,81 @@ class authorizedotnet_helper {
     }
 
     /**
-     * Creates a transaction using the Authorize.net API.
+     * Creates a transaction using the Authorize.Net REST API.
      *
      * @param float $amount Transaction amount.
-     * @param string $currency Currency (not used by API, but kept for consistency).
-     * @param object $opaquedata Opaque data object.
+     * @param string $currency Currency code (e.g., USD).
+     * @param object $opaquedata Opaque data object from Accept.js (descriptor + value).
      * @return array Transaction result.
      */
     public function create_transaction(float $amount, string $currency, object $opaquedata): array {
-        // Authentication.
-        $merchantauthentication = new AnetAPI\MerchantAuthenticationType();
-        $merchantauthentication->setName($this->apiloginid);
-        $merchantauthentication->setTransactionKey($this->transactionkey);
+        $url = $this->sandbox
+            ? 'https://apitest.authorize.net/xml/v1/request.api'
+            : 'https://api.authorize.net/xml/v1/request.api';
 
-        // Payment details.
-        $opaquedatatype = new AnetAPI\OpaqueDataType();
-        $opaquedatatype->setDataDescriptor($opaquedata->dataDescriptor);
-        $opaquedatatype->setDataValue($opaquedata->dataValue);
+        // Build request payload.
+        $payload = [
+            'createTransactionRequest' => [
+                'merchantAuthentication' => [
+                    'name'           => $this->apiloginid,
+                    'transactionKey' => $this->transactionkey,
+                ],
+                'refId' => 'ref' . time(),
+                'transactionRequest' => [
+                    'transactionType' => 'authCaptureTransaction',
+                    'amount' => $amount,
+                    'payment' => [
+                        'opaqueData' => [
+                            'dataDescriptor' => $opaquedata->dataDescriptor,
+                            'dataValue'      => $opaquedata->dataValue,
+                        ]
+                    ]
+                ]
+            ]
+        ];
 
-        $payment = new AnetAPI\PaymentType();
-        $payment->setOpaqueData($opaquedatatype);
+        // Moodle curl wrapper.
+        $curl = new \curl();
+        $options = [
+            'CURLOPT_RETURNTRANSFER' => true,
+            'CURLOPT_HTTPHEADER'     => ['Content-Type: application/json'],
+            'CURLOPT_TIMEOUT'        => 30,
+            'CURLOPT_SSL_VERIFYPEER' => true,
+            'CURLOPT_SSL_VERIFYHOST' => 2,
+        ];
 
-        // Transaction request.
-        $transactionrequest = new AnetAPI\TransactionRequestType();
-        $transactionrequest->setTransactionType("authCaptureTransaction");
-        $transactionrequest->setAmount($amount);
-        $transactionrequest->setPayment($payment);
+        
+        $response = $curl->post($url, json_encode($payload), $options);
+        
+        if ($response === false) {
+            return ['success' => false, 'message' => 'No response from Authorize.Net'];
+        }
+        
+        // Strip BOM if present
+        $response = preg_replace('/^\xEF\xBB\xBF/', '', $response);
 
-        $request = new AnetAPI\CreateTransactionRequest();
-        $request->setMerchantAuthentication($merchantauthentication);
-        $request->setRefId('ref' . time());
-        $request->setTransactionRequest($transactionrequest);
-
-        // Execute.
-        $controller = new AnetController\CreateTransactionController($request);
-        $environment = $this->sandbox
-            ? \net\authorize\api\constants\ANetEnvironment::SANDBOX
-            : \net\authorize\api\constants\ANetEnvironment::PRODUCTION;
-
-        $response = $controller->executeWithApiResponse($environment);
-
-        if ($response === null) {
-            return ['success' => false, 'message' => 'No response from Authorize.net'];
+        // Decode JSON
+        $result = json_decode(trim($response), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return ['success' => false, 'message' => 'Invalid JSON response from Authorize.Net'];
         }
 
-        if ($response->getMessages()->getResultCode() !== "Ok") {
-            $tresponse = $response->getTransactionResponse();
-            $message = $tresponse && $tresponse->getErrors()
-                ? $tresponse->getErrors()[0]->getErrorText()
-                : $response->getMessages()->getMessage()[0]->getText();
+        $messages = $result['messages'] ?? null;
+        if (!$messages || $messages['resultCode'] !== 'Ok') {
+            $message = $messages['message'][0]['text'] ?? 'Unknown error';
             return ['success' => false, 'message' => $message];
         }
 
-        $tresponse = $response->getTransactionResponse();
-        if ($tresponse && $tresponse->getResponseCode() === "1") {
+        $tresponse = $result['transactionResponse'] ?? null;
+        if ($tresponse && $tresponse['responseCode'] === "1") {
             return [
                 'success'       => true,
-                'transactionid' => $tresponse->getTransId(),
-                'status'        => $tresponse->getMessages()[0]->getDescription(),
+                'transactionid' => $tresponse['transId'] ?? '',
+                'status'        => $tresponse['messages'][0]['description'] ?? 'Approved',
             ];
         }
 
-        $message = $tresponse && $tresponse->getErrors()
-            ? $tresponse->getErrors()[0]->getErrorText()
-            : 'Transaction Failed';
-
+        $message = $tresponse['errors'][0]['errorText'] ?? 'Transaction Failed';
         return ['success' => false, 'message' => $message];
     }
 }

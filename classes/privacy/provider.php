@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy provider for the Authorize.net payment gateway.
+ * Privacy Subsystem implementation for paygw_paypal.
  *
  * @package    paygw_authorizedotnet
  * @author     DualCube <admin@dualcube.com>
@@ -25,21 +25,55 @@
 
 namespace paygw_authorizedotnet\privacy;
 
+use core_payment\privacy\paygw_provider;
+use core_privacy\local\request\writer;
+
 /**
- * Privacy provider for the Authorize.net payment gateway.
+ * Privacy Subsystem implementation for paygw_authorizedotnet.
  *
  * @package    paygw_authorizedotnet
- * @copyright  2025 Me
+ * @author     DualCube <admin@dualcube.com>
+ * @copyright  2025 DualCube Team(https://dualcube.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\provider {
+class provider implements \core_privacy\local\metadata\null_provider, paygw_provider {
 
     /**
-     * Get the language string identifier for the component area.
+     * Explain why this plugin stores no personal data.
      *
-     * @return string The language string identifier.
+     * @return string
      */
-    public static function get_area_name(): string {
-        return get_string('pluginname', 'paygw_authorizedotnet');
+    public static function get_reason(): string {
+        return 'privacy:metadata';
+    }
+
+    /**
+     * Export all user data for the specified payment record.
+     *
+     * @param \context $context Context
+     * @param array $subcontext The location within the current context
+     * @param \stdClass $payment The payment record
+     */
+    public static function export_payment_data(\context $context, array $subcontext, \stdClass $payment) {
+        global $DB;
+
+        $subcontext[] = get_string('gatewayname', 'paygw_authorizedotnet');
+        if ($record = $DB->get_record('paygw_authorizedotnet', ['paymentid' => $payment->id])) {
+            $data = (object) [
+                'transactionid' => $record->transactionid,
+            ];
+            writer::with_context($context)->export_data($subcontext, $data);
+        }
+    }
+
+    /**
+     * Delete all user data related to the given payments.
+     *
+     * @param string $paymentsql SQL query that selects payment.id field
+     * @param array $paymentparams Array of parameters for $paymentsql
+     */
+    public static function delete_data_for_payment_sql(string $paymentsql, array $paymentparams) {
+        global $DB;
+        $DB->delete_records_select('paygw_authorizedotnet', "paymentid IN ({$paymentsql})", $paymentparams);
     }
 }
