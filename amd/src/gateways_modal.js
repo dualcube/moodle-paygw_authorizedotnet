@@ -16,7 +16,7 @@
 /**
  * authorize.net payment gateway plugin.
  *
- * @module paygw_authorizedotnet/gateways_modal
+ * @module     paygw_authorizedotnet/gateways_modal
  * @package    paygw_authorizedotnet
  * @author     DualCube <admin@dualcube.com>
  * @copyright  2025 DualCube Team(https://dualcube.com)
