@@ -178,8 +178,6 @@ class authorizedotnet_helper {
             return ['success' => false, 'message' => 'No response from Authorize.Net'];
         }
 
-        $response = preg_replace('/^\xEF\xBB\xBF/', '', $response);
-
         $result = json_decode(trim($response), true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             return ['success' => false, 'message' => 'Invalid JSON response from Authorize.Net'];
