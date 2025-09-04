@@ -40,4 +40,11 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
+    'paygw_authorizedotnet_get_merchant_currency' => [
+        'classname'   => 'paygw_authorizedotnet\external\get_merchant_currency',
+        'classpath'   => '',
+        'description' => 'Returns the merchant\'s supported currency from Authorize.net.',
+        'type'        => 'read',
+        'ajax'        => true,
+    ],
 ];

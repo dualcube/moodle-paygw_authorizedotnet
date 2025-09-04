@@ -27,24 +27,24 @@ declare(strict_types=1);
 
 namespace paygw_authorizedotnet\external;
 
-use core_payment\helper as payment_helper;
 use core_external\external_api;
-use core_external\external_function_parameters;
 use core_external\external_value;
+use core_external\external_function_parameters;
 use core_external\external_single_structure;
+use core_payment\helper;
+use paygw_authorizedotnet\authorizedotnet_helper;
 
 /**
- * External API class for fetching Authorize.net configuration for JavaScript.
+ * External API class for fetching the Authorize.net merchant currency.
  *
- * This class provides a webservice endpoint to securely retrieve the necessary
- * configuration details (like API login ID and public client key) for the
- * Authorize.net JavaScript SDK. It extends the `external_api` class provided
- * by Moodle.
+ * This class provides a webservice endpoint to securely retrieve the supported
+ * currency of the merchant's Authorize.net account. This allows for a currency
+ * check to be performed on the client-side before the user is prompted to pay.
  *
  * @package paygw_authorizedotnet
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class get_config_for_js extends external_api {
+class get_merchant_currency extends external_api {
 
     /**
      * Returns description of method parameters.
@@ -60,7 +60,7 @@ class get_config_for_js extends external_api {
     }
 
     /**
-     * Returns the config values required by the Authorize.net JavaScript SDK.
+     * Returns the currency supported by the merchant's Authorize.net account.
      *
      * @param string $component
      * @param string $paymentarea
@@ -77,16 +77,11 @@ class get_config_for_js extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
-        $config = payment_helper::get_gateway_configuration($component, $paymentarea, $itemid, 'authorizedotnet');
-        $payable = payment_helper::get_payable($component, $paymentarea, $itemid);
-        $currency = $payable->get_currency();
+        $config = helper::get_gateway_configuration($component, $paymentarea, $itemid, 'authorizedotnet');
 
-        return [
-            'apiloginid' => $config['apiloginid'],
-            'publicclientkey' => $config['publicclientkey'],
-            'environment' => $config['environment'],
-            'currency' => $currency,
-        ];
+        $helper = new authorizedotnet_helper($config['apiloginid'], $config['transactionkey'], $config['environment'] == 'sandbox');
+
+        return $helper->get_merchant_currency();
     }
 
     /**
@@ -96,10 +91,9 @@ class get_config_for_js extends external_api {
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'apiloginid' => new external_value(PARAM_TEXT, 'API Login ID'),
-            'publicclientkey' => new external_value(PARAM_TEXT, 'Public Client Key'),
-            'environment' => new external_value(PARAM_TEXT, 'Environment'),
-            'currency' => new external_value(PARAM_TEXT, 'Currency of the transaction'),
+            'success' => new external_value(PARAM_BOOL, 'Whether the request was successful.'),
+            'currency' => new external_value(PARAM_TEXT, 'The merchant\'s currency code.'),
+            'message' => new external_value(PARAM_RAW, 'An error or success message.'),
         ]);
     }
 }
