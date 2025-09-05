@@ -58,7 +58,7 @@ jobs:
 
       - name: Clean Extra Files from Plugin
         run: |
-          rm -rf authorizedotnet/.git authorizedotnet/.github authorizedotnet/node_modules authorizedotnet/tests authorizedotnet/phpunit.xml
+          rm -rf authorizedotnet/.git authorizedotnet/.github authorizedotnet/node_modules authorizedotnet/tests authorizedotnet/phpunit.xml authorizedotnet/vendor
           rm -f authorizedotnet/composer.* authorizedotnet/package*.json authorizedotnet/webpack.config.js authorizedotnet/.zipignore
 
       - name: Install moodle-plugin-ci tooling
@@ -80,10 +80,23 @@ jobs:
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci phplint authorizedotnet
 
+      - name: Moodle Code Checker
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpcs --max-warnings 0
+
+      - name: Moodle PHPDoc Checker
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpdoc --max-warnings 0
+
       - name: PHP Mess Detector
         if: ${{ !cancelled() }}
         continue-on-error: true
         run: moodle-plugin-ci phpmd authorizedotnet
+
+
+      - name: Mustache Lint
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci mustache
 
       - name: PHP Code Beautifier and Fixer
         if: ${{ !cancelled() }}

@@ -64,10 +64,10 @@ class process_payment extends external_api {
     /**
      * Perform what needs to be done when a transaction is reported to be complete.
      *
-     * @param string $component Name of the component that the itemid belongs to
-     * @param string $paymentarea
-     * @param int $itemid An internal identifier that is used by the component
-     * @param object $opaquedata The opaque data from Authorize.net
+     * @param string $component Name of the component that the itemid belongs to.
+     * @param string $paymentarea Payment area within the component.
+     * @param int $itemid Internal identifier used by the component.
+     * @param string $opaquedata JSON string of opaque data from Authorize.Net (Accept.js).
      * @return array
      */
     public static function execute(string $component, string $paymentarea, int $itemid, string $opaquedata): array {

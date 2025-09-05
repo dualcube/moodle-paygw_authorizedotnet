@@ -16,6 +16,7 @@
 /**
  * authorize.net payment gateway plugin.
  *
+ * @module     paygw_authorizedotnet/gateways_modal
  * @package    paygw_authorizedotnet
  * @author     DualCube <admin@dualcube.com>
  * @copyright  2025 DualCube Team(https://dualcube.com)
@@ -40,27 +41,43 @@ import Notification from 'core/notification';
  */
 export const process = (component, paymentArea, itemId, description) => {
     let modal;
-    return Repository.getConfigForJs(component, paymentArea, itemId)
-    .then(async config => {
 
-        const body = await Templates.render('paygw_authorizedotnet/authorizedotnet_button', {
+    // First, check the currency before doing anything else.
+    return Promise.all([
+        Repository.getConfigForJs(component, paymentArea, itemId),
+        Repository.getMerchantCurrency(component, paymentArea, itemId),
+    ])
+    .then(([config, merchantCurrencyResponse]) => {
+        // Perform the currency check immediately.
+        if (!merchantCurrencyResponse.success || merchantCurrencyResponse.currency !== config.currency) {
+            return Promise.reject(new Error(
+                'Currency mismatch. Merchant supports ' + merchantCurrencyResponse.currency +
+                ' but this transaction is in ' + config.currency + '.'
+            ));
+        }
+
+        // Now render the payment button template.
+        return Templates.render('paygw_authorizedotnet/authorizedotnet_button', {
             apiloginid: config.apiloginid,
             clientkey: config.publicclientkey,
-        });
-
-        return Promise.all([
-            Modal.create({
+        })
+        .then(async body => {
+            // Create modal with button already in DOM
+            return Modal.create({
                 title: getString('pluginname', 'paygw_authorizedotnet'),
                 body: body,
                 show: true,
                 removeOnClose: true,
-            }),
-            switchSdk(config.environment),
-        ]);
+            });
+        })
+        .then(modalInstance => {
+            modal = modalInstance;
+            // Now load the SDK (button exists already)
+            return switchSdk(config.environment);
+        });
     })
-    .then(([modalInstance]) => {
-        modal = modalInstance;
-
+    .then(() => {
+        // Set up the response handler after SDK is loaded
         return new Promise(resolve => {
             window.responseHandler = function(response) {
                 modal.getRoot().on(ModalEvents.outsideClick, (e) => {
@@ -92,6 +109,11 @@ export const process = (component, paymentArea, itemId, description) => {
             return Promise.resolve(res.message);
         }
         return Promise.reject(res.message);
+    })
+    .catch(error => {
+        // Display the error and stop the process.
+        Notification.alert(getString('error', 'moodle'), error.message || 'An unknown error occurred.');
+        return Promise.reject(error.message);
     });
 };
 

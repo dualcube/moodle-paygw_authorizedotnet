@@ -16,6 +16,7 @@
 /**
  * authorize.net payment gateway plugin.
  *
+ * @module paygw_authorizedotnet/repository
  * @package    paygw_authorizedotnet
  * @author     DualCube <admin@dualcube.com>
  * @copyright  2025 DualCube Team(https://dualcube.com)
@@ -60,6 +61,25 @@ export const processPayment = (component, paymentArea, itemId, opaqueData) => {
             paymentarea: paymentArea,
             itemid: itemId,
             opaquedata: JSON.stringify(opaqueData),
+        },
+    }])[0];
+};
+
+/**
+ * Returns the merchant's supported currency.
+ *
+ * @param {string} component
+ * @param {string} paymentArea
+ * @param {number} itemId
+ * @returns {Promise}
+ */
+export const getMerchantCurrency = (component, paymentArea, itemId) => {
+    return Ajax.call([{
+        methodname: 'paygw_authorizedotnet_get_merchant_currency',
+        args: {
+            component: component,
+            paymentarea: paymentArea,
+            itemid: itemId,
         },
     }])[0];
 };
