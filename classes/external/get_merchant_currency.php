@@ -31,8 +31,8 @@ use core_external\external_api;
 use core_external\external_value;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
-use core_payment\helper;
-use paygw_authorizedotnet\authorizedotnet_helper;
+use core_payment\helper as payment_helper;
+use paygw_authorizedotnet\helper;
 
 /**
  * External API class for fetching the Authorize.net merchant currency.
@@ -76,9 +76,9 @@ class get_merchant_currency extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
-        $config = helper::get_gateway_configuration($component, $paymentarea, $itemid, 'authorizedotnet');
+        $config = payment_helper::get_gateway_configuration($component, $paymentarea, $itemid, 'authorizedotnet');
 
-        $helper = new authorizedotnet_helper($config['apiloginid'], $config['transactionkey'], $config['environment'] == 'sandbox');
+        $helper = new helper($config['apiloginid'], $config['transactionkey'], $config['environment'] == 'sandbox');
 
         return $helper->get_merchant_currency();
     }

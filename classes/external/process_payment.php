@@ -31,9 +31,8 @@ use core_external\external_api;
 use core_external\external_value;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
-use core_payment\helper;
 use core_payment\helper as payment_helper;
-use paygw_authorizedotnet\authorizedotnet_helper;
+use paygw_authorizedotnet\helper;
 
 /**
  * External API for processing Authorize.net payments.
@@ -83,16 +82,16 @@ class process_payment extends external_api {
 
         $opaquedataobject = json_decode($opaquedata);
 
-        $config = (object)helper::get_gateway_configuration($component, $paymentarea, $itemid, 'authorizedotnet');
+        $config = (object)payment_helper::get_gateway_configuration($component, $paymentarea, $itemid, 'authorizedotnet');
 
         $payable = payment_helper::get_payable($component, $paymentarea, $itemid);
         $currency = $payable->get_currency();
 
         // Add surcharge if there is any.
-        $surcharge = helper::get_gateway_surcharge('authorizedotnet');
-        $amount = helper::get_rounded_cost($payable->get_amount(), $currency, $surcharge);
+        $surcharge = payment_helper::get_gateway_surcharge('authorizedotnet');
+        $amount = payment_helper::get_rounded_cost($payable->get_amount(), $currency, $surcharge);
 
-        $helper = new authorizedotnet_helper($config->apiloginid, $config->transactionkey, $config->environment == 'sandbox');
+        $helper = new helper($config->apiloginid, $config->transactionkey, $config->environment == 'sandbox');
 
         $response = $helper->create_transaction($amount, $currency, $opaquedataobject);
 

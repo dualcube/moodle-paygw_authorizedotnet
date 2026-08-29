@@ -32,7 +32,7 @@ require_once($CFG->libdir . '/filelib.php');
 /**
  * Helper class for interacting with the Authorize.Net API (REST).
  */
-class authorizedotnet_helper {
+class helper {
     /**
      * API login ID for Authorize.Net.
      *
