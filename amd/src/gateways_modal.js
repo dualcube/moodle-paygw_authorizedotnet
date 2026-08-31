@@ -48,8 +48,14 @@ export const process = (component, paymentArea, itemId, description) => {
         Repository.getMerchantCurrency(component, paymentArea, itemId),
     ])
     .then(([config, merchantCurrencyResponse]) => {
+        // If the merchant currency lookup itself failed, surface the real reason
+        // instead of masking it behind a currency mismatch message.
+        if (!merchantCurrencyResponse.success) {
+            throw new Error(merchantCurrencyResponse.message);
+        }
+
         // Perform the currency check immediately.
-        if (!merchantCurrencyResponse.success || merchantCurrencyResponse.currency !== config.currency) {
+        if (merchantCurrencyResponse.currency !== config.currency) {
             return getString('currencymismatch', 'paygw_authorizedotnet', {
                 merchantcurrency: merchantCurrencyResponse.currency,
                 transactioncurrency: config.currency,
