@@ -62,8 +62,10 @@ class helper {
      * @param bool $sandbox Use sandbox environment if true.
      */
     public function __construct(string $apiloginid, string $transactionkey, bool $sandbox) {
-        $this->apiloginid = $apiloginid;
-        $this->transactionkey = $transactionkey;
+        // Trim to guard against stray whitespace/newlines from copy-pasted credentials,
+        // which would otherwise push transactionKey past Authorize.Net's 16-char schema limit.
+        $this->apiloginid = trim($apiloginid);
+        $this->transactionkey = trim($transactionkey);
         $this->sandbox = $sandbox;
     }
 

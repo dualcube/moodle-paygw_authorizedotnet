@@ -25,6 +25,7 @@
 
 $string['apiloginid'] = 'API Login ID';
 $string['apiloginid_help'] = 'Enter the API login ID.';
+$string['apiloginidtoolong'] = 'API Login ID must be at most 25 characters.';
 $string['approved'] = 'Approved';
 $string['authorising'] = 'Authorising the payment. Please wait...';
 $string['currencymismatch'] = 'Currency mismatch. Merchant supports {$a->merchantcurrency} but this transaction is in {$a->transactioncurrency}.';
@@ -48,4 +49,5 @@ $string['sandbox'] = 'Sandbox';
 $string['transactionfailed'] = 'Transaction failed.';
 $string['transactionkey'] = 'Transaction Key';
 $string['transactionkey_help'] = 'Enter the transaction key.';
+$string['transactionkeytoolong'] = 'Transaction Key must be at most 16 characters.';
 $string['unknownerror'] = 'Unknown error.';
