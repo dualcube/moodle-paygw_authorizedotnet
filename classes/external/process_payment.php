@@ -56,6 +56,7 @@ class process_payment extends external_api {
             'component' => new external_value(PARAM_COMPONENT, 'The component name'),
             'paymentarea' => new external_value(PARAM_AREA, 'Payment area in the component'),
             'itemid' => new external_value(PARAM_INT, 'The item id in the context of the component area'),
+            'description' => new external_value(PARAM_TEXT, 'Description of the payment'),
             'opaquedata' => new external_value(PARAM_RAW, 'The opaque data from Authorize.net'),
         ]);
     }
@@ -66,16 +67,24 @@ class process_payment extends external_api {
      * @param string $component Name of the component that the itemid belongs to.
      * @param string $paymentarea Payment area within the component.
      * @param int $itemid Internal identifier used by the component.
+     * @param string $description Description of the payment.
      * @param string $opaquedata JSON string of opaque data from Authorize.Net (Accept.js).
      * @return array
      */
-    public static function execute(string $component, string $paymentarea, int $itemid, string $opaquedata): array {
+    public static function execute(
+        string $component,
+        string $paymentarea,
+        int $itemid,
+        string $description,
+        string $opaquedata
+    ): array {
         global $USER, $DB;
 
         $params = [
             'component' => $component,
             'paymentarea' => $paymentarea,
             'itemid' => $itemid,
+            'description' => $description,
             'opaquedata' => $opaquedata,
         ];
         self::validate_parameters(self::execute_parameters(), $params);
@@ -93,7 +102,7 @@ class process_payment extends external_api {
 
         $helper = new helper($config->apiloginid, $config->transactionkey, $config->environment == 'sandbox');
 
-        $response = $helper->create_transaction($amount, $currency, $opaquedataobject);
+        $response = $helper->create_transaction($amount, $currency, $opaquedataobject, $description);
 
         $success = false;
         $message = '';

@@ -148,9 +148,10 @@ class helper {
      * @param float $amount Transaction amount.
      * @param string $currency Currency code (e.g., USD).
      * @param object $opaquedata Opaque data object from Accept.js (descriptor + value).
+     * @param string $description Description of the payment, shown on the Authorize.Net transaction record.
      * @return array Transaction result.
      */
-    public function create_transaction(float $amount, string $currency, object $opaquedata): array {
+    public function create_transaction(float $amount, string $currency, object $opaquedata, string $description = ''): array {
         $url = $this->sandbox
             ? 'https://apitest.authorize.net/xml/v1/request.api'
             : 'https://api.authorize.net/xml/v1/request.api';
@@ -171,6 +172,10 @@ class helper {
                             'dataDescriptor' => $opaquedata->dataDescriptor,
                             'dataValue'      => $opaquedata->dataValue,
                         ],
+                    ],
+                    // Authorize.Net's orderType.description has a 255-character schema limit.
+                    'order' => [
+                        'description' => mb_substr($description, 0, 255),
                     ],
                 ],
             ],

@@ -17,7 +17,6 @@
  * authorize.net payment gateway plugin.
  *
  * @module paygw_authorizedotnet/repository
- * @package    paygw_authorizedotnet
  * @author     DualCube <admin@dualcube.com>
  * @copyright  2025 DualCube Team(https://dualcube.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -50,16 +49,18 @@ export const getConfigForJs = (component, paymentArea, itemId) => {
  * @param {string} component
  * @param {string} paymentArea
  * @param {number} itemId
+ * @param {string} description
  * @param {object} opaqueData
  * @returns {Promise}
  */
-export const processPayment = (component, paymentArea, itemId, opaqueData) => {
+export const processPayment = (component, paymentArea, itemId, description, opaqueData) => {
     return Ajax.call([{
         methodname: 'paygw_authorizedotnet_process_payment',
         args: {
             component: component,
             paymentarea: paymentArea,
             itemid: itemId,
+            description: description,
             opaquedata: JSON.stringify(opaqueData),
         },
     }])[0];
