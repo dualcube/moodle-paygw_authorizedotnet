@@ -44,4 +44,12 @@ module.exports = function (grunt) {
             done(false);
         }
     });
+
+    // No-op: this plugin ships no CSS/SCSS. moodle-plugin-ci's "grunt" command
+    // schedules a "stylelint" task by default alongside "amd", and fails outright
+    // with "Task not found" if the Gruntfile doesn't define one - registering it
+    // here (even as a no-op) keeps that check honest and passing.
+    grunt.registerTask('stylelint', 'No stylesheets in this plugin.', function() {
+        grunt.log.writeln('No CSS/SCSS files to lint.');
+    });
 };
