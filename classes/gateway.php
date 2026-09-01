@@ -91,6 +91,9 @@ class gateway extends \core_payment\gateway {
     /**
      * Validates the gateway configuration form.
      *
+     * $form and $files are unused here but required by the
+     * core_payment\gateway::validate_gateway_form() signature this method overrides.
+     *
      * @param \core_payment\form\account_gateway $form
      * @param \stdClass $data
      * @param array $files
