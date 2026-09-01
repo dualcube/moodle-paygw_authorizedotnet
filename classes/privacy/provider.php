@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for paygw_paypal.
+ * Privacy Subsystem implementation for paygw_authorizedotnet.
  *
  * @package    paygw_authorizedotnet
  * @author     DualCube <admin@dualcube.com>
@@ -37,7 +37,6 @@ use core_privacy\local\request\writer;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements \core_privacy\local\metadata\null_provider, paygw_provider {
-
     /**
      * Explain why this plugin stores no personal data.
      *

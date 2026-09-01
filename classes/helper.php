@@ -32,8 +32,7 @@ require_once($CFG->libdir . '/filelib.php');
 /**
  * Helper class for interacting with the Authorize.Net API (REST).
  */
-class authorizedotnet_helper {
-
+class helper {
     /**
      * API login ID for Authorize.Net.
      *
@@ -63,8 +62,10 @@ class authorizedotnet_helper {
      * @param bool $sandbox Use sandbox environment if true.
      */
     public function __construct(string $apiloginid, string $transactionkey, bool $sandbox) {
-        $this->apiloginid = $apiloginid;
-        $this->transactionkey = $transactionkey;
+        // Trim to guard against stray whitespace/newlines from copy-pasted credentials,
+        // which would otherwise push transactionKey past Authorize.Net's 16-char schema limit.
+        $this->apiloginid = trim($apiloginid);
+        $this->transactionkey = trim($transactionkey);
         $this->sandbox = $sandbox;
     }
 
@@ -103,19 +104,23 @@ class authorizedotnet_helper {
         $response = $curl->post($url, json_encode($payload), $options);
 
         if ($response === false) {
-            return ['success' => false, 'currency' => '', 'message' => 'No response from Authorize.Net'];
+            return ['success' => false, 'currency' => '', 'message' => get_string('noresponse', 'paygw_authorizedotnet')];
         }
 
         $response = preg_replace('/^\xEF\xBB\xBF/', '', $response);
 
         $result = json_decode(trim($response), true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            return ['success' => false, 'currency' => '', 'message' => 'Invalid JSON response from Authorize.Net'];
+            return [
+                'success' => false,
+                'currency' => '',
+                'message' => get_string('invalidjsonresponse', 'paygw_authorizedotnet'),
+            ];
         }
 
         $messages = $result['messages'] ?? null;
         if (!$messages || $messages['resultCode'] !== 'Ok') {
-            $message = $messages['message'][0]['text'] ?? 'Unknown error';
+            $message = $messages['message'][0]['text'] ?? get_string('unknownerror', 'paygw_authorizedotnet');
             return ['success' => false, 'currency' => '', 'message' => $message];
         }
 
@@ -123,10 +128,18 @@ class authorizedotnet_helper {
         $currency = is_array($currencies) && !empty($currencies) ? $currencies[0] : '';
 
         if (!$currency) {
-            return ['success' => false, 'currency' => '', 'message' => 'Currency not found in merchant details'];
+            return [
+                'success' => false,
+                'currency' => '',
+                'message' => get_string('currencynotfound', 'paygw_authorizedotnet'),
+            ];
         }
 
-        return ['success' => true, 'currency' => $currency, 'message' => 'Merchant currency fetched'];
+        return [
+            'success' => true,
+            'currency' => $currency,
+            'message' => get_string('merchantcurrencyfetched', 'paygw_authorizedotnet'),
+        ];
     }
 
     /**
@@ -176,19 +189,19 @@ class authorizedotnet_helper {
         $response = $curl->post($url, json_encode($payload), $options);
 
         if ($response === false) {
-            return ['success' => false, 'message' => 'No response from Authorize.Net'];
+            return ['success' => false, 'message' => get_string('noresponse', 'paygw_authorizedotnet')];
         }
 
         $response = preg_replace('/^\xEF\xBB\xBF/', '', $response);
 
         $result = json_decode(trim($response), true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            return ['success' => false, 'message' => 'Invalid JSON response from Authorize.Net'];
+            return ['success' => false, 'message' => get_string('invalidjsonresponse', 'paygw_authorizedotnet')];
         }
 
         $messages = $result['messages'] ?? null;
         if (!$messages || $messages['resultCode'] !== 'Ok') {
-            $message = $messages['message'][0]['text'] ?? 'Unknown error';
+            $message = $messages['message'][0]['text'] ?? get_string('unknownerror', 'paygw_authorizedotnet');
             return ['success' => false, 'message' => $message];
         }
 
@@ -197,11 +210,11 @@ class authorizedotnet_helper {
             return [
                 'success'        => true,
                 'transactionid' => $tresponse['transId'] ?? '',
-                'status'         => $tresponse['messages'][0]['description'] ?? 'Approved',
+                'status'         => $tresponse['messages'][0]['description'] ?? get_string('approved', 'paygw_authorizedotnet'),
             ];
         }
 
-        $message = $tresponse['errors'][0]['errorText'] ?? 'Transaction Failed';
+        $message = $tresponse['errors'][0]['errorText'] ?? get_string('transactionfailed', 'paygw_authorizedotnet');
         return ['success' => false, 'message' => $message];
     }
 }

@@ -30,9 +30,9 @@ namespace paygw_authorizedotnet\external;
 use core_external\external_api;
 use core_external\external_value;
 use core_external\external_function_parameters;
-use core_payment\helper;
+use core_external\external_single_structure;
 use core_payment\helper as payment_helper;
-use paygw_authorizedotnet\authorizedotnet_helper;
+use paygw_authorizedotnet\helper;
 
 /**
  * External API for processing Authorize.net payments.
@@ -46,13 +46,12 @@ use paygw_authorizedotnet\authorizedotnet_helper;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class process_payment extends external_api {
-
     /**
      * Returns description of method parameters.
      *
      * @return external_function_parameters
      */
-    public static function execute_parameters() {
+    public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'component' => new external_value(PARAM_COMPONENT, 'The component name'),
             'paymentarea' => new external_value(PARAM_AREA, 'Payment area in the component'),
@@ -83,16 +82,16 @@ class process_payment extends external_api {
 
         $opaquedataobject = json_decode($opaquedata);
 
-        $config = (object)helper::get_gateway_configuration($component, $paymentarea, $itemid, 'authorizedotnet');
+        $config = (object)payment_helper::get_gateway_configuration($component, $paymentarea, $itemid, 'authorizedotnet');
 
         $payable = payment_helper::get_payable($component, $paymentarea, $itemid);
         $currency = $payable->get_currency();
 
         // Add surcharge if there is any.
-        $surcharge = helper::get_gateway_surcharge('authorizedotnet');
-        $amount = helper::get_rounded_cost($payable->get_amount(), $currency, $surcharge);
+        $surcharge = payment_helper::get_gateway_surcharge('authorizedotnet');
+        $amount = payment_helper::get_rounded_cost($payable->get_amount(), $currency, $surcharge);
 
-        $helper = new authorizedotnet_helper($config->apiloginid, $config->transactionkey, $config->environment == 'sandbox');
+        $helper = new helper($config->apiloginid, $config->transactionkey, $config->environment == 'sandbox');
 
         $response = $helper->create_transaction($amount, $currency, $opaquedataobject);
 
@@ -103,8 +102,16 @@ class process_payment extends external_api {
             $success = true;
             // Everything is correct. Let's give them what they paid for.
             try {
-                $paymentid = payment_helper::save_payment($payable->get_account_id(), $component, $paymentarea,
-                    $itemid, (int) $USER->id, $amount, $currency, 'authorizedotnet');
+                $paymentid = payment_helper::save_payment(
+                    $payable->get_account_id(),
+                    $component,
+                    $paymentarea,
+                    $itemid,
+                    (int) $USER->id,
+                    $amount,
+                    $currency,
+                    'authorizedotnet'
+                );
 
                 // Store transaction extra information.
                 $record = new \stdClass();
@@ -133,10 +140,10 @@ class process_payment extends external_api {
     /**
      * Returns description of method result value.
      *
-     * @return external_function_parameters
+     * @return external_single_structure
      */
-    public static function execute_returns() {
-        return new external_function_parameters([
+    public static function execute_returns(): external_single_structure {
+        return new external_single_structure([
             'success' => new external_value(PARAM_BOOL, 'Whether everything was successful or not.'),
             'message' => new external_value(PARAM_RAW, 'Message (usually the error message).'),
         ]);

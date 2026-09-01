@@ -48,12 +48,20 @@ export const process = (component, paymentArea, itemId, description) => {
         Repository.getMerchantCurrency(component, paymentArea, itemId),
     ])
     .then(([config, merchantCurrencyResponse]) => {
+        // If the merchant currency lookup itself failed, surface the real reason
+        // instead of masking it behind a currency mismatch message.
+        if (!merchantCurrencyResponse.success) {
+            throw new Error(merchantCurrencyResponse.message);
+        }
+
         // Perform the currency check immediately.
-        if (!merchantCurrencyResponse.success || merchantCurrencyResponse.currency !== config.currency) {
-            return Promise.reject(new Error(
-                'Currency mismatch. Merchant supports ' + merchantCurrencyResponse.currency +
-                ' but this transaction is in ' + config.currency + '.'
-            ));
+        if (merchantCurrencyResponse.currency !== config.currency) {
+            return getString('currencymismatch', 'paygw_authorizedotnet', {
+                merchantcurrency: merchantCurrencyResponse.currency,
+                transactioncurrency: config.currency,
+            }).then(message => {
+                throw new Error(message);
+            });
         }
 
         // Now render the payment button template.
@@ -112,7 +120,7 @@ export const process = (component, paymentArea, itemId, description) => {
     })
     .catch(error => {
         // Display the error and stop the process.
-        Notification.alert(getString('error', 'moodle'), error.message || 'An unknown error occurred.');
+        Notification.alert(getString('error', 'moodle'), error.message || getString('unknownerror', 'paygw_authorizedotnet'));
         return Promise.reject(error.message);
     });
 };

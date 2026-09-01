@@ -68,6 +68,7 @@ class gateway extends \core_payment\gateway {
         $mform->addElement('text', 'apiloginid', get_string('apiloginid', 'paygw_authorizedotnet'));
         $mform->setType('apiloginid', PARAM_TEXT);
         $mform->addHelpButton('apiloginid', 'apiloginid', 'paygw_authorizedotnet');
+        $mform->addRule('apiloginid', get_string('maximumchars', 'form', 25), 'maxlength', 25, 'client');
 
         $mform->addElement('text', 'publicclientkey', get_string('publicclientkey', 'paygw_authorizedotnet'));
         $mform->setType('publicclientkey', PARAM_TEXT);
@@ -76,6 +77,7 @@ class gateway extends \core_payment\gateway {
         $mform->addElement('text', 'transactionkey', get_string('transactionkey', 'paygw_authorizedotnet'));
         $mform->setType('transactionkey', PARAM_TEXT);
         $mform->addHelpButton('transactionkey', 'transactionkey', 'paygw_authorizedotnet');
+        $mform->addRule('transactionkey', get_string('maximumchars', 'form', 16), 'maxlength', 16, 'client');
 
         $options = [
             'live' => get_string('live', 'paygw_authorizedotnet'),
@@ -94,11 +96,28 @@ class gateway extends \core_payment\gateway {
      * @param array $files
      * @param array $errors form errors (passed by reference)
      */
-    public static function validate_gateway_form(\core_payment\form\account_gateway $form,
-                                                 \stdClass $data, array $files, array &$errors): void {
-        if ($data->enabled &&
-                (empty($data->apiloginid) || empty($data->publicclientkey) || empty($data->transactionkey))) {
+    public static function validate_gateway_form(
+        \core_payment\form\account_gateway $form,
+        \stdClass $data,
+        array $files,
+        array &$errors
+    ): void {
+        if (
+            $data->enabled &&
+                (empty($data->apiloginid) || empty($data->publicclientkey) || empty($data->transactionkey))
+        ) {
             $errors['enabled'] = get_string('gatewaycannotbeenabled', 'payment');
+        }
+
+        // Authorize.Net's API rejects requests where these exceed its own schema limits
+        // (merchantAuthenticationType: name maxLength 25, transactionKey maxLength 16),
+        // so validate here to catch a misconfigured value before it reaches checkout.
+        if (!empty($data->apiloginid) && strlen(trim($data->apiloginid)) > 25) {
+            $errors['apiloginid'] = get_string('apiloginidtoolong', 'paygw_authorizedotnet');
+        }
+
+        if (!empty($data->transactionkey) && strlen(trim($data->transactionkey)) > 16) {
+            $errors['transactionkey'] = get_string('transactionkeytoolong', 'paygw_authorizedotnet');
         }
     }
 }
