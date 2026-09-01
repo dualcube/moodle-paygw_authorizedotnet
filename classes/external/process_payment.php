@@ -102,7 +102,7 @@ class process_payment extends external_api {
 
         $helper = new helper($config->apiloginid, $config->transactionkey, $config->environment == 'sandbox');
 
-        $response = $helper->create_transaction($amount, $currency, $opaquedataobject, $description);
+        $response = $helper->create_transaction($amount, $opaquedataobject, $description);
 
         $success = false;
         $message = '';

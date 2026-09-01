@@ -145,13 +145,16 @@ class helper {
     /**
      * Creates a transaction using the Authorize.Net REST API.
      *
+     * Authorize.Net accounts settle in a single fixed merchant currency (see
+     * get_merchant_currency()), so createTransactionRequest has no per-transaction
+     * currency field to pass.
+     *
      * @param float $amount Transaction amount.
-     * @param string $currency Currency code (e.g., USD).
      * @param object $opaquedata Opaque data object from Accept.js (descriptor + value).
      * @param string $description Description of the payment, shown on the Authorize.Net transaction record.
      * @return array Transaction result.
      */
-    public function create_transaction(float $amount, string $currency, object $opaquedata, string $description = ''): array {
+    public function create_transaction(float $amount, object $opaquedata, string $description = ''): array {
         $url = $this->sandbox
             ? 'https://apitest.authorize.net/xml/v1/request.api'
             : 'https://api.authorize.net/xml/v1/request.api';
